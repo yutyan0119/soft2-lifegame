@@ -1,22 +1,27 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>  // sleep()関数を使う
 #include <string.h>
 #include <time.h>
+#include <unistd.h>  // sleep()関数を使う
 
-void init_cells(const int height, const int width, int cell[height][width], FILE *fp);
+void init_cells(const int height, const int width, int cell[height][width],
+                FILE *fp);
 
-void print_cells(FILE *fp, int gen, const int height, const int width, int cell[height][width]);
+void print_cells(FILE *fp, int gen, const int height, const int width,
+                 int cell[height][width]);
 
-int count_adjacent_cells(int h, int w, const int height, const int width,int cell[height][width]);
+int count_adjacent_cells(int h, int w, const int height, const int width,
+                         int cell[height][width]);
 
 void update_cells(const int height, const int width, int cell[height][width]);
 
 int getrandom(int min, int max);
 
-int max (int a, int b);
+int max(int a, int b);
 
-int min (int a,int b);
+int min(int a, int b);
+
+void output_board(int height, int width, int cell[height][width], int gen);
 
 int main(int argc, char **argv) {
   srand(time(NULL));
@@ -50,20 +55,37 @@ int main(int argc, char **argv) {
 
   print_cells(fp, 0, height, width, cell);  // 表示する
   sleep(1);                                 // 1秒休止
-  fprintf(fp, "\e[%dA",height + 4); 
+  fprintf(fp, "\e[%dA", height + 4);
 
   /* 世代を進める*/
   for (int gen = 1;; gen++) {
     update_cells(height, width, cell);          // セルを更新
     print_cells(fp, gen, height, width, cell);  // 表示する
     sleep(1);                                   // 1秒休止する
-    fprintf(fp, "\e[%dA",height + 4);
+    fprintf(fp, "\e[%dA", height + 4);
+    if (gen % 100 == 0 && gen < 10000) {
+      FILE *file;
+      char *filename;
+      sprintf(filename, "gen%04d.lif", gen);
+      printf("%s", filename);
+      file = fopen(filename, "w");
+      fprintf(file, "#Life 1.06\n");
+      for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+          if (cell[i][j]) {
+            fprintf(file, "%d %d\n", j, i);
+          }
+        }
+      }
+      fclose(file);
+    }
   }
 
   return EXIT_SUCCESS;
 }
 
-void init_cells(const int height, const int width, int cell[height][width], FILE *fp) {
+void init_cells(const int height, const int width, int cell[height][width],
+                FILE *fp) {
   //乱数を生成してそれにしたがってRIF6ファイルを出力してこれに入れる。
   if (fp == NULL) {
     FILE *pk;
@@ -80,7 +102,7 @@ void init_cells(const int height, const int width, int cell[height][width], FILE
     FILE *fp2;
     fp2 = fopen("random.lif", "r");  //生成したファイル利用
     char buf[100];
-    fgets(buf, 100, fp2);//1行飛ばす
+    fgets(buf, 100, fp2);  // 1行飛ばす
     while (fgets(buf, 100, fp2)) {
       char *y;
       char *x;
@@ -116,7 +138,8 @@ void init_cells(const int height, const int width, int cell[height][width], FILE
   }
 }
 
-void print_cells(FILE *fp, int gen, const int height, const int width, int cell[height][width]) {
+void print_cells(FILE *fp, int gen, const int height, const int width,
+                 int cell[height][width]) {
   // cellのデータを使って、fp(stdout)にfprintfで出力
   int count = 0;
   for (int i = 0; i < height; i++) {
@@ -148,13 +171,14 @@ void print_cells(FILE *fp, int gen, const int height, const int width, int cell[
   fflush(fp);
 };
 
-int count_adjacent_cells(int h, int w, const int height, const int width, int cell[height][width]) {
+int count_adjacent_cells(int h, int w, const int height, const int width,
+                         int cell[height][width]) {
   // cellの(h,w)周辺の数をfor文でカウントする
   int count = 0;
   int miny = max(0, h - 1);
-  int maxy = min(height-1, h + 1);
+  int maxy = min(height - 1, h + 1);
   int minx = max(0, w - 1);
-  int maxx = min(width-1, w + 1);
+  int maxx = min(width - 1, w + 1);
   for (int i = miny; i <= maxy; i++) {
     for (int j = minx; j <= maxx; j++) {
       count += cell[i][j];
@@ -170,7 +194,7 @@ void update_cells(const int height, const int width, int cell[height][width]) {
     for (int j = 0; j < width; j++) {
       int count = count_adjacent_cells(i, j, height, width, cell);
       if (cell[i][j]) {
-        if (count == 2 || count ==3) {
+        if (count == 2 || count == 3) {
           newcell[i][j] = 1;
         } else {
           newcell[i][j] = 0;
@@ -196,18 +220,35 @@ int getrandom(int min, int max) {
   return (int)(min + R * (max - min));
 }
 
-int max (int a, int b){
-  if (a>b){
+int max(int a, int b) {
+  if (a > b) {
     return a;
-  }else {
+  } else {
     return b;
   }
 }
 
-int min (int a, int b){
-  if (a>b){
+int min(int a, int b) {
+  if (a > b) {
     return b;
-  }else {
+  } else {
     return a;
   }
+}
+
+void output_board(int height, int width, int cell[height][width], int gen) {
+  FILE *file;
+  char *filename;
+  sprintf(filename, "gen%04d.lif", gen);
+  printf("%s", filename);
+  file = fopen(filename, "w");
+  fprintf(file, "#Life 1.06\n");
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      if (cell[i][j]) {
+        fprintf(file, "%d %d\n", j, i);
+      }
+    }
+  }
+  fclose(file);
 }
