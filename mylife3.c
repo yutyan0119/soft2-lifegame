@@ -66,7 +66,6 @@ int main(int argc, char **argv) {
       FILE *file;
       char *filename;
       sprintf(filename, "gen%04d.lif", gen);
-      printf("%s", filename);
       file = fopen(filename, "w");
       fprintf(file, "#Life 1.06\n");
       for (int i = 0; i < height; i++) {
@@ -91,7 +90,7 @@ void init_cells(const int height, const int width, int cell[height][width], FILE
     FILE *pk;
     pk = fopen("random.lif", "w");
     fprintf(pk, "#Life 1.06");
-    for (int i = 0; i < 280; i++) {
+    for (int i = 0; i < 300; i++) {
       fprintf(pk, "\n");
       int x = getrandom(0, 69);
       int y = getrandom(0, 39);
