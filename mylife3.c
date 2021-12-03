@@ -4,8 +4,7 @@
 #include <time.h>
 #include <unistd.h>  // sleep()関数を使う
 
-void init_cells(const int height, const int width, int cell[height][width],
-                FILE *fp);
+void init_cells(const int height, const int width, int cell[height][width], FILE *fp);
 
 void print_cells(FILE *fp, int gen, const int height, const int width,
                  int cell[height][width]);
@@ -84,9 +83,10 @@ int main(int argc, char **argv) {
   return EXIT_SUCCESS;
 }
 
-void init_cells(const int height, const int width, int cell[height][width],
-                FILE *fp) {
+void init_cells(const int height, const int width, int cell[height][width], FILE *fp) {
   //乱数を生成してそれにしたがってRIF6ファイルを出力してこれに入れる。
+  size_t buffsize = 300;
+  int rleflag = 0;
   if (fp == NULL) {
     FILE *pk;
     pk = fopen("random.lif", "w");
@@ -101,9 +101,9 @@ void init_cells(const int height, const int width, int cell[height][width],
 
     FILE *fp2;
     fp2 = fopen("random.lif", "r");  //生成したファイル利用
-    char buf[100];
-    fgets(buf, 100, fp2);  // 1行飛ばす
-    while (fgets(buf, 100, fp2)) {
+    char buf[buffsize];
+    fgets(buf, buffsize, fp2);  // 1行飛ばす
+    while (fgets(buf, buffsize, fp2)) {
       char *y;
       char *x;
       x = strtok(buf, " ");
@@ -119,21 +119,102 @@ void init_cells(const int height, const int width, int cell[height][width],
     }
     fclose(pk);
   } else {
-    char buf[100];
-    fgets(buf, 100, fp);  // 1行目は切り捨てる
-    while (fgets(buf, 100, fp)) {
-      char *y;
-      char *x;
-      x = strtok(buf, " ");
-      y = strtok(NULL, " ");
-      for (int i = 0; i < strlen(y); i++) {
-        if (y[i] == '\n') {
-          y[i] = '\0';
-        }
+    char buf[buffsize];
+    int column = 0;
+    int row = 0;
+    while (fgets(buf, buffsize, fp)) {
+      if (buf[strlen(buf)-1] == '\n'){
+        buf[strlen(buf)-1] = '\0';
       }
-      int X = atoi(x);
-      int Y = atoi(y);
-      cell[Y][X] = 1;
+      if (buf[0] == '#') {
+        continue;
+      } else if (buf[0] == 'x') {
+        rleflag = 1;
+        int xsize;
+        int ysize;
+        char *tmpx = buf + 4;
+        char *tmpy;
+        tmpx = strtok(tmpx, ",");
+        tmpy = strtok(NULL, ",");
+        tmpy = tmpy + 5;
+        xsize = atoi(tmpx);
+        ysize = atoi(tmpy);
+        if (xsize >= 70 || ysize >= 40) {
+          printf("This BoardSize is too large to input.Plz check your file!\n");
+          break;
+        }
+        continue;
+      } else if (rleflag) {
+        if (buf[0] == '#') {
+          continue;
+        }
+        if (buf[0] == 'x') {
+          int xsize;
+          int ysize;
+          char *tmpx = buf + 4;
+          char *tmpy;
+          tmpx = strtok(tmpx, ",");
+          tmpy = strtok(NULL, ",");
+          tmpy = tmpy + 5;
+          xsize = atoi(tmpx);
+          ysize = atoi(tmpy);
+          if (xsize >= 70 || ysize >= 40) {
+            printf(
+                "This BoardSize is too large to input.Plz check your file!\n");
+            break;
+          }
+          continue;
+        }
+        int howmany = 1;
+        for (int i = 0; i < strlen(buf); i++) {
+          if (buf[i] == '$') {
+            column += howmany;
+            howmany = 1;
+            row = 0;
+          } else if (buf[i] == 'o') {
+            for (int j = 0; j < howmany; j++) {
+              cell[column][row + j] = 1;
+            }
+            row += howmany;
+            howmany = 1;
+          } else if (buf[i] == 'b') {
+            for (int j = 0; j < howmany; j++) {
+              cell[column][row + j] = 0;
+            }
+            row += howmany;
+            howmany = 1;
+          } else if (buf[i] == '!') {
+            break;
+          } else {                        //数字のとき
+            int index = strlen(buf) - 2;  //ないと思うけど最後改行対策
+            for (int j = i; j < strlen(buf); j++) {
+              if (buf[j] == 'b' || buf[j] == 'o' || buf[j] == '!' ||
+                  buf[j] == '$') {
+                index = j - 1;
+                break;
+              }
+            }
+            char num[5];
+            for (int j = i; j <= index; j++) {
+              num[j - i] = buf[j];
+            }
+            howmany = atoi(num);
+          }
+        }
+      } else {
+        char *y;
+        char *x;
+        x = strtok(buf, " ");
+        y = strtok(NULL, " ");
+        for (int i = 0; i < strlen(y); i++) {
+          if (y[i] == '\n') {
+            y[i] = '\0';
+          }
+        }
+        int X = atoi(x);
+        int Y = atoi(y);
+        cell[Y][X] = 1;
+      }
     }
   }
 }
