@@ -54,7 +54,8 @@ void print_cells(FILE* fp, int gen, const int height, const int width, int cell[
   fflush(fp);
 };
 
-int count_adjacent_cells(int h, int w, const int height, const int width,int cell[height][width]) {
+int count_adjacent_cells(int h, int w, const int height, const int width,
+                         int cell[height][width]) {
   // cellの[h,w]周辺の数をfor文でカウントする
   int count = 0;
   int miny = max(0, h - 1);
@@ -134,15 +135,15 @@ int main(int argc, char* argv[]) {
     }
     int X = atoi(x);
     int Y = atoi(y);
-    cell[Y][X] = 1;    
+    cell[Y][X] = 1;
   }
   fclose(fp3);
   FILE* fp2 = stdout;
   for (int gen = 0;; gen++) {
     print_cells(fp2, gen, height, width, cell);  // 表示する
-    update_cells(height, width, cell);          // セルを更新
-    fprintf(fp2, "\e[%dA",height + 4); 
-    sleep(1);                                   // 1秒休止する
+    update_cells(height, width, cell);           // セルを更新
+    fprintf(fp2, "\e[%dA", height + 4);
+    sleep(1);  // 1秒休止する
   }
   return 0;
 }
