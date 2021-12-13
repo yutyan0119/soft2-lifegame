@@ -33,6 +33,19 @@ int main() {
       tmpy = tmpy + 5;
       xsize = atoi(tmpx);
       ysize = atoi(tmpy);
+      char* rule;
+      strtok(NULL, " ");
+      strtok(NULL, " ");
+      rule = strtok(NULL,"/");
+      if (rule == NULL) {
+        continue;
+      }
+      rule++;
+      printf("%s\n", rule);
+      rule = strtok(NULL,"\n");
+      rule ++;
+      printf("%s\n", rule);
+      continue;
       continue;
     }
     int howmany = 1;
@@ -74,7 +87,7 @@ int main() {
   }
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      printf("%d ",cell[i][j]);
+      printf("%d ", cell[i][j]);
     }
     printf("\n");
   }
