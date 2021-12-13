@@ -4,7 +4,8 @@
 #include <time.h>
 #include <unistd.h>  // sleep()関数を使う
 
-void init_cells(const int height, const int width, int cell[height][width], FILE *fp);
+void init_cells(const int height, const int width, int cell[height][width],
+                FILE *fp);
 
 void print_cells(FILE *fp, int gen, const int height, const int width,
                  int cell[height][width]);
@@ -82,7 +83,8 @@ int main(int argc, char **argv) {
   return EXIT_SUCCESS;
 }
 
-void init_cells(const int height, const int width, int cell[height][width], FILE *fp) {
+void init_cells(const int height, const int width, int cell[height][width],
+                FILE *fp) {
   //乱数を生成してそれにしたがってRIF6ファイルを出力してこれに入れる。
   size_t buffsize = 300;
   int rleflag = 0;
@@ -122,8 +124,8 @@ void init_cells(const int height, const int width, int cell[height][width], FILE
     int column = 0;
     int row = 0;
     while (fgets(buf, buffsize, fp)) {
-      if (buf[strlen(buf)-1] == '\n'){
-        buf[strlen(buf)-1] = '\0';
+      if (buf[strlen(buf) - 1] == '\n') {
+        buf[strlen(buf) - 1] = '\0';
       }
       if (buf[0] == '#') {
         continue;
