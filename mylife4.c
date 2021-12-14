@@ -48,7 +48,8 @@ int return0xnum(char buf[]) {
   return num;
 }
 
-void makegif(const int width, const int height, const int a[][width],
+
+void makegif(const int width, const int height, const int a[][width], FILE *fp,
              unsigned char gifdata[], int *gifdataindex);
 
 void init_cells(const int height, const int width, int cell[height][width],
@@ -103,33 +104,34 @@ int main(int argc, char **argv) {
     init_cells(height, width, cell, NULL);  // デフォルトの初期値を使う
   }
 
-  print_cells(fp, 0, height, width, cell);  // 表示する
-  sleep(1);                                 // 1秒休止
+  // print_cells(fp, 0, height, width, cell);  // 表示する
+  // sleep(1);                                 // 1秒休止
   fprintf(fp, "\e[%dA", height + 4);
+
+  FILE *file;
+  char *filename;
+  file = fopen("lifegame.gif", "w");
   unsigned char gifdata[100000] = {
       'G',  'I',  'F',  '8',  '9',  'a',  width, 0x00, height, 0x00, 0x80, 0x00,
       0x00, 0xb0, 0xc4, 0xde, 0xFF, 0xFF, 0xFF,  0x21, 0xFF,   11,   'N',  'E',
       'T',  'S',  'C',  'A',  'P',  'E',  '2',   '.',  '0',    3,    1,    0,
       0,    0,    0x21, 0xF9, 4,    4,    10,    0,    0,      0};
-  int gifdataindex = 50;
+
+
+  int gifindex = 46;
   /* 世代を進める*/
-
-  FILE *file;
-  file = fopen("lifegame.gif", "wb");
-  for (int gen = 1; gen < 3; gen++) {
+  for (int gen = 1; gen < 100; gen++) {
     update_cells(height, width, cell);          // セルを更新
-    print_cells(fp, gen, height, width, cell);  // 表示する
-    sleep(1);                                   // 1秒休止する
-    fprintf(fp, "\e[%dA", height + 4);
-    makegif(width, height, cell, gifdata, &gifdataindex);
+    // print_cells(fp, gen, height, width, cell);  // 表示する
+    // sleep(1);                                   // 1秒休止する
+    // fprintf(fp, "\e[%dA", height + 4);
+    // sprintf(filename, "gen%04d.gif", gen);
+    // file = fopen(filename, "wb");
+    makegif(width, height, cell, file, gifdata, &gifindex);
+    printf("gen = %d\n",gen);
   }
-
-  for (int i = 0; i < 10000; i++) {
-    printf("%d", gifdata[i]);
-  }
-  gifdata[gifdataindex] = 0;
-  gifdata[gifdataindex+1]  = 0x3b;
-  fwrite(gifdata, sizeof(unsigned char), sizeof(gifdata) / sizeof(gifdata[0]),
+  gifdata[gifindex] = 0x3b;
+  fwrite(gifdata, sizeof(unsigned char), sizeof(unsigned char) * (gifindex + 2),
          file);
   fclose(file);
   return EXIT_SUCCESS;
@@ -393,7 +395,8 @@ void output_board(int height, int width, int cell[height][width], int gen) {
   fclose(file);
 }
 
-void makegif(const int width, const int height, const int a[][width],
+
+void makegif(const int width, const int height, const int a[][width], FILE *fp,
              unsigned char gifdata[], int *gifdataindex) {
   Node *n = malloc(sizeof(Node) * 300);
   n[0] = node_init("0");
@@ -480,17 +483,26 @@ void makegif(const int width, const int height, const int a[][width],
       imageindex++;
     }
   }
-  char format[100] = {0x2C, 0, 0, 0, 0, width, 0, height, 0, 0x00, 2};
+  unsigned char num = imageindex;
+  // for (int i = 0; i < imageindex; i++) {
+  //   printf("%d,", imageboard[i]);
+  // }
+  // for (int i = 0; i < imageindex; i++) {
+  //   printf("%d,", bitsize[i]);
+  // }
+  char need[] = {0x2c, 0x00, 0x00, 0x00, 0x00, width, 0, height, 0, 0, 2};
   for (int i = 0; i < 11; i++) {
-    gifdata[*(gifdataindex) + i] = format[i];
+    gifdata[*gifdataindex] = need[i];
+    (*gifdataindex)++;
   }
-  (*gifdataindex) += 11;
-  char num = imageindex;
+
   gifdata[*gifdataindex] = num;
-  *(gifdataindex) += 1;
-  for (int i = 0; i < num; i++) {
-    gifdata[*(gifdataindex) + i] = imageboard[i];
+  (*gifdataindex)++;
+  for (int i = 0; i < imageindex; i++) {
+    gifdata[*(gifdataindex)] = imageboard[i];
+    (*gifdataindex)++;
   }
-  *(gifdataindex) += num;
+  gifdata[*(gifdataindex)] = 0;
+  (*gifdataindex)++;
   free(n);
 }
