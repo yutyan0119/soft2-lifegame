@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
 
   FILE *file;
   char *filename;
-  file = fopen("lifegame.gif", "w");
+  file = fopen("lifegamerev2.gif", "w");
   unsigned char gifdata[100000] = {
       'G',  'I',  'F',  '8',  '9',  'a',  width, 0x00, height, 0x00, 0x80, 0x00,
       0x00, 0xb0, 0xc4, 0xde, 0xFF, 0xFF, 0xFF,  0x21, 0xFF,   11,   'N',  'E',
@@ -118,9 +118,9 @@ int main(int argc, char **argv) {
 
   int gifindex = 46;
   /* 世代を進める*/
-  FILE *output;
-  output = fopen("testdata.txt", "w");
-  for (int gen = 1; gen < 60; gen++) {
+  // FILE *output;
+  // output = fopen("testdata.txt", "w");
+  for (int gen = 1; gen < 3; gen++) {
     update_cells(height, width, cell);  // セルを更新
     // for (int i = 0; i < height; i++) {
     //   for (int j = 0; j < width; j++) {
