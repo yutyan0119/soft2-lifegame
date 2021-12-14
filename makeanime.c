@@ -51,7 +51,6 @@ int return0xnum(char buf[]) {
 void makegif(const int width, const int height, const int a[][width], FILE *fp,
              unsigned char gifdata[], int *gifdataindex);
 
-
 int main() {
   FILE *fp = stdout;
   const int height = 40;
@@ -65,11 +64,12 @@ int main() {
   FILE *file;
   char *filename;
   file = fopen("animetest.gif", "w");
-  unsigned char gifdata[1000] = {
-      'G',  'I',  'F',  '8',  '9',   'a',  width,  0x00, height, 0x00,
-      0x80, 0x00, 0x00, 0x41, 0x69,  0xE1, 0xFF,   0xFF, 0xFF,   0x2C,
-      0,    0,    0,    0,    width, 0,    height, 0,    0x00,   2};
-  int gifindex = 30;
+  unsigned char gifdata[100000] = {
+      'G',  'I',  'F',  '8',  '9',  'a',  width, 0x00, height, 0x00, 0x80, 0x00,
+      0x00, 0xb0, 0xc4, 0xde, 0xFF, 0xFF, 0xFF,  0x21, 0xFF,   11,   'N',  'E',
+      'T',  'S',  'C',  'A',  'P',  'E',  '2',   '.',  '0',    3,    1,    0,
+      0,    0,    0x21, 0xF9, 4,    4,    10,    0,    0,      0};
+  int gifindex = 46;
   /* 世代を進める*/
   for (int gen = 2; gen < 4; gen++) {
     for (int i = 0; i < height; i++) {
@@ -84,12 +84,12 @@ int main() {
     makegif(width, height, cell, file, gifdata, &gifindex);
   }
   gifdata[gifindex] = 0x3b;
-  for (int i = 0; i < 1000; i++)
-  {
-      printf("%d",gifdata[i]);
+  for (int i = 0; i < 1000; i++) {
+    printf("%d", gifdata[i]);
   }
-  
- fwrite(gifdata,sizeof(unsigned char),sizeof(unsigned char)*(gifindex+2),file);
+
+  fwrite(gifdata, sizeof(unsigned char), sizeof(unsigned char) * (gifindex + 2),
+         file);
   fclose(file);
 
   return EXIT_SUCCESS;
@@ -183,18 +183,21 @@ void makegif(const int width, const int height, const int a[][width], FILE *fp,
     }
   }
   unsigned char num = imageindex;
-  for (int i = 0; i < imageindex; i++)
-  {
-      printf("%d,",imageboard[i]);
+  for (int i = 0; i < imageindex; i++) {
+    printf("%d,", imageboard[i]);
   }
-  for (int i = 0; i < imageindex; i++)
-  {
-      printf("%d,",bitsize[i]);
+  for (int i = 0; i < imageindex; i++) {
+    printf("%d,", bitsize[i]);
   }
-  
+  char need[] = {0x2c, 0x00, 0x00, 0x00, 0x00, width, 0, height, 0, 0, 2};
+  for (int i = 0; i < 11; i++) {
+    gifdata[*gifdataindex] = need[i];
+    (*gifdataindex)++;
+  }
+
   gifdata[*gifdataindex] = num;
   (*gifdataindex)++;
-  for (int i = 0; i < imageindex + 1; i++) {
+  for (int i = 0; i < imageindex ; i++) {
     gifdata[*(gifdataindex)] = imageboard[i];
     (*gifdataindex)++;
   }
