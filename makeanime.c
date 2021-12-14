@@ -5,10 +5,10 @@
 #include <time.h>
 #include <unistd.h>  // sleep()関数を使う
 #define MAX_NODE 10000
-#define CODE_SIZE 10000
+#define CODE_SIZE 50000
 
 typedef struct node {
-  char c[400];
+  char c[1000];
   bool registerd;
 } Node;
 
@@ -64,14 +64,15 @@ int main() {
   FILE *file;
   char *filename;
   file = fopen("animetest.gif", "w");
-  unsigned char gifdata[100000] = {
-      'G',  'I',  'F',  '8',  '9',  'a',  width, 0x00, height, 0x00, 0x80, 0x00,
-      0x00, 0xb0, 0xc4, 0xde, 0xFF, 0xFF, 0xFF,  0x21, 0xFF,   11,   'N',  'E',
-      'T',  'S',  'C',  'A',  'P',  'E',  '2',   '.',  '0',    3,    1,    0,
-      0,    0,    0x21, 0xF9, 4,    4,    10,    0,    0,      0};
+  unsigned char gifdata[1000000] = {
+      'G',  'I',  'F',  '8',  '9',  'a',  width * 3, 0x00, height * 3, 0x00,
+      0x80, 0x00, 0x00, 0xb0, 0xc4, 0xde, 0xFF,      0xFF, 0xFF,       0x21,
+      0xFF, 11,   'N',  'E',  'T',  'S',  'C',       'A',  'P',        'E',
+      '2',  '.',  '0',  3,    1,    0,    0,         0,    0x21,       0xF9,
+      4,    4,    10,   0,    0,    0};
   int gifindex = 46;
   /* 世代を進める*/
-  for (int gen = 1; gen < 20; gen++) {
+  for (int gen = 2; gen < 10; gen++) {
     for (int i = 0; i < height; i++) {
       for (int j = 0; j < width; j++) {
         if (i % gen == j % gen) {
@@ -81,8 +82,9 @@ int main() {
         }
       }
     }
-    printf("gen = %d\n",gen);
+    printf("gen = %d\n", gen);
     makegif(width, height, cell, file, gifdata, &gifindex);
+    printf("%d\n", gifindex);
   }
   gifdata[gifindex] = 0x3b;
   // for (int i = 0; i < 1000; i++) {
@@ -98,7 +100,7 @@ int main() {
 
 void makegif(const int width, const int height, const int a[][width], FILE *fp,
              unsigned char gifdata[], int *gifdataindex) {
-  Node *n = malloc(sizeof(Node) * 300);
+  Node *n = malloc(sizeof(Node) * 10000);
   n[0] = node_init("0");
   n[1] = node_init("1");
   n[2] = node_init("2");
@@ -106,16 +108,37 @@ void makegif(const int width, const int height, const int a[][width], FILE *fp,
   n[4] = node_init("4");
   n[5] = node_init("5");
   size_t size = 6;
-  char code[CODE_SIZE];
+  unsigned char *code = malloc(sizeof(unsigned char) * 100000);
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      code[i * width + j] = '0' + a[i][j];
+      if (a[i][j] == 1) {
+        for (int k = 0; k < 3; k++) {
+          for (int l = 0; l < 3; l++) {
+            code[i * width * 3 * 3 + k * width * 3 + j * 3 + l] = '1';
+            // printf("1を%dに入れる\n", (i * 3 + k) * width * 3 + j * 3 + l);
+          }
+        }
+      } else {
+        for (int k = 0; k < 3; k++) {
+          for (int l = 0; l < 3; l++) {
+            code[i * width * 3 * 3 + k * width * 3 + j * 3 + l] = '0';
+            // printf("0を%dに入れる\n",i*width*3*3+k*width*3+j*3+l);
+          }
+        }
+      }
     }
   }
-  char bitsize[CODE_SIZE + 2];
+  // for (int i = 0; i < height * 3; i++) {
+  //   for (int j = 0; j < width * 3; j++) {
+  //     printf("%c", code[i * width * 3 + j]);
+  //   }
+  //   printf("\n");
+  // }
+
+  unsigned char bitsize[CODE_SIZE + 2];
   int bitlength = 3;
   bitsize[0] = bitlength;
-  char ans[CODE_SIZE + 2];
+  int ans[CODE_SIZE + 2];
   size_t anssize = 0;
   ans[0] = 4;
   for (int i = 0; i < strlen(code); i++) {
@@ -143,6 +166,8 @@ void makegif(const int width, const int height, const int a[][width], FILE *fp,
       node_append(n, &size, s);
       s[j - 1] = '\0';
       ans[anssize + 1] = node_find(n, size, s);
+      // printf("size = %ld, bitlength = %d ,%d =
+      // %d,%s\n",size,bitlength,node_find(n,size,s),ans[anssize+1],s);
       bitsize[anssize + 1] = bitlength;
       if (size - 1 >= 1 << bitlength) {
         bitlength++;
@@ -150,59 +175,97 @@ void makegif(const int width, const int height, const int a[][width], FILE *fp,
       anssize++;
     }
   }
+  // for (int i = 0; i < anssize + 2; i++) {
+  //   printf("%d, ", ans[i]);
+  // }
+  // printf("\n");
+  // printf("maxbitlength = %d, anssize = %d\n", bitlength, anssize);
   char buf[8];
   int bufindex = 7;
-  int imageboard[256];
+  int imageboard[500];
   int imageindex = 0;
   for (int i = 0; i < anssize + 2; i++) {
-    char x = ans[i];
+    // printf("bitsize = %d\n",bitsize[i]);
+    int x = ans[i];
     char y[bitsize[i]];
+    // printf("%d = ",x);
     for (int j = 0; j < bitsize[i]; j++) {
       if (x & 1 << (bitsize[i] - 1 - j)) {
         y[j] = 1;
       } else {
         y[j] = 0;
       }
+      // printf("%d", y[j]);
     }
+    // printf("\n");
     for (int j = 0; j < bitsize[i]; j++) {
       if (bufindex < 0) {  // bufが満杯
-        for (int k = 0; k < 8; k++) {
-        }
+        // printf("bitset");
+        // for (int k = 0; k < 8; k++) {
+        //   printf("%d", buf[k]);
+        // }
+        // printf("\n");
         imageboard[imageindex] = return0xnum(buf);
         ++imageindex;
         bufindex = 7;
       }
       buf[bufindex] = y[bitsize[i] - 1 - j];
+      // printf("%d",buf[bufindex]);
       bufindex--;
     }
     if (i == anssize + 1) {
       for (int j = 0; j <= bufindex; j++) {
         buf[j] = 0;
       }
+      // printf("lastbitset");
+      // for (int j = 0; j < 8; j++) {
+      //   printf("%d", buf[j]);
+      // }
+      // printf("\n");
       imageboard[imageindex] = return0xnum(buf);
       imageindex++;
     }
   }
-  unsigned char num = imageindex;
+  int num = imageindex;
+  // printf("num = %d\n", num);
+  // printf("imageに入れる配列長%d\n", num + 12);
   // for (int i = 0; i < imageindex; i++) {
   //   printf("%d,", imageboard[i]);
   // }
+  // printf("\n");
   // for (int i = 0; i < imageindex; i++) {
   //   printf("%d,", bitsize[i]);
   // }
-  char need[] = {0x2c, 0x00, 0x00, 0x00, 0x00, width, 0, height, 0, 0, 2};
+  // printf("\n");
+  char need[] = {0x2c, 0x00,       0x00, 0x00, 0x00, width * 3,
+                 0,    height * 3, 0,    0,    2};
   for (int i = 0; i < 11; i++) {
     gifdata[*gifdataindex] = need[i];
     (*gifdataindex)++;
   }
-
-  gifdata[*gifdataindex] = num;
-  (*gifdataindex)++;
-  for (int i = 0; i < imageindex ; i++) {
-    gifdata[*(gifdataindex)] = imageboard[i];
+  int imageboardindex = 0;
+  printf("gifdataindex = %d,num = %d\n",*gifdataindex,num);
+  while (num >= 256) {
+    gifdata[*gifdataindex] = 255;
     (*gifdataindex)++;
+    for (int j = 0; j < 255; j++) {
+      gifdata[*(gifdataindex)] = imageboard[imageboardindex];
+      // printf("j = %d, gifdataindex = %d, imageboardindex = %d\n",j,*gifdataindex,imageboardindex);
+      *(gifdataindex)+=1;
+      imageboardindex++;
+    }
+    num -= 255;
+  }
+  gifdata[*gifdataindex] = num;
+  // printf("kokomadekita!\n");
+  *(gifdataindex)+=1;
+  for (int j = 0; j < num; j++) {
+    gifdata[*(gifdataindex)] = imageboard[imageboardindex];
+    *(gifdataindex)+=1;
+    imageboardindex++;
   }
   gifdata[*(gifdataindex)] = 0;
   (*gifdataindex)++;
   free(n);
+  free(code);
 }
