@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
 
   // print_cells(fp, 0, height, width, cell);  // 表示する
   // sleep(1);                                 // 1秒休止
-  fprintf(fp, "\e[%dA", height + 4);
+  // fprintf(fp, "\e[%dA", height + 4);
 
   FILE *file;
   char *filename;
