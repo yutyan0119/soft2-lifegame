@@ -71,7 +71,7 @@ int main() {
       0,    0,    0x21, 0xF9, 4,    4,    10,    0,    0,      0};
   int gifindex = 46;
   /* 世代を進める*/
-  for (int gen = 2; gen < 4; gen++) {
+  for (int gen = 1; gen < 20; gen++) {
     for (int i = 0; i < height; i++) {
       for (int j = 0; j < width; j++) {
         if (i % gen == j % gen) {
@@ -81,12 +81,13 @@ int main() {
         }
       }
     }
+    printf("gen = %d\n",gen);
     makegif(width, height, cell, file, gifdata, &gifindex);
   }
   gifdata[gifindex] = 0x3b;
-  for (int i = 0; i < 1000; i++) {
-    printf("%d", gifdata[i]);
-  }
+  // for (int i = 0; i < 1000; i++) {
+  //   printf("%d", gifdata[i]);
+  // }
 
   fwrite(gifdata, sizeof(unsigned char), sizeof(unsigned char) * (gifindex + 2),
          file);
@@ -183,12 +184,12 @@ void makegif(const int width, const int height, const int a[][width], FILE *fp,
     }
   }
   unsigned char num = imageindex;
-  for (int i = 0; i < imageindex; i++) {
-    printf("%d,", imageboard[i]);
-  }
-  for (int i = 0; i < imageindex; i++) {
-    printf("%d,", bitsize[i]);
-  }
+  // for (int i = 0; i < imageindex; i++) {
+  //   printf("%d,", imageboard[i]);
+  // }
+  // for (int i = 0; i < imageindex; i++) {
+  //   printf("%d,", bitsize[i]);
+  // }
   char need[] = {0x2c, 0x00, 0x00, 0x00, 0x00, width, 0, height, 0, 0, 2};
   for (int i = 0; i < 11; i++) {
     gifdata[*gifdataindex] = need[i];
