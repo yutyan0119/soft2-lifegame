@@ -114,9 +114,9 @@ int main(int argc, char **argv) {
   int gifdataindex = 50;
   /* 世代を進める*/
 
-  // FILE *file;
-  // file = fopen("lifegame.gif", "wb");
-  for (int gen = 1; gen < 100; gen++) {
+  FILE *file;
+  file = fopen("lifegame.gif", "wb");
+  for (int gen = 1; gen < 3; gen++) {
     update_cells(height, width, cell);          // セルを更新
     print_cells(fp, gen, height, width, cell);  // 表示する
     sleep(1);                                   // 1秒休止する
@@ -124,14 +124,14 @@ int main(int argc, char **argv) {
     makegif(width, height, cell, gifdata, &gifdataindex);
   }
 
-  for (int i = 0; i < 10000; i++)
-  {
-    printf("%d",gifdata[i]);
+  for (int i = 0; i < 10000; i++) {
+    printf("%d", gifdata[i]);
   }
-  
-
-  // fwrite(gifdata, sizeof(unsigned char), sizeof(gifdata) /
-  // sizeof(gifdata[0]),file); fclose(file);
+  gifdata[gifdataindex] = 0;
+  gifdata[gifdataindex+1]  = 0x3b;
+  fwrite(gifdata, sizeof(unsigned char), sizeof(gifdata) / sizeof(gifdata[0]),
+         file);
+  fclose(file);
   return EXIT_SUCCESS;
 }
 

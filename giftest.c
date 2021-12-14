@@ -29,10 +29,12 @@ int main() {
       128,  68,   97,   128,  8,    52,   34,    127,   202,    37,     79,
       232,  124,  246,  162,  182,  38,   53,    8,     189,    98,     167,
       90,   153,  181,  107,  12,   139,  199,   228,   178,    249,    140,
-      78,   171,  215,  236,  182,  251,  13,    143,   39,     10,     0x3B};
+      78,   171,  215,  236,  182,  251,  13,    143,   39,     10,     0,
+      0x3B};
   FILE* fp;
   fp = fopen("my1stgif.gif", "wb");
-  fwrite(gifdata, sizeof(unsigned char), sizeof(gifdata)/sizeof(gifdata[0]), fp);
+  fwrite(gifdata, sizeof(unsigned char), sizeof(gifdata) / sizeof(gifdata[0]),
+         fp);
   fclose(fp);
   return 0;
 }
