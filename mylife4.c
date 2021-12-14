@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
     print_cells(fp, gen, height, width, cell);  // 表示する
     sleep(1);                                   // 1秒休止する
     fprintf(fp, "\e[%dA", height + 4);
-    if (gen % 10 == 0 && gen < 10000) {
+    if (gen % 3 == 0 && gen < 10000) {
       FILE *file;
       char *filename;
       sprintf(filename, "gen%04d.gif", gen);
