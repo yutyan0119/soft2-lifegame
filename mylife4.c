@@ -49,7 +49,7 @@ int return0xnum(char buf[]) {
 }
 
 void makegif(const int width, const int height, const int a[][width],
-             FILE *fp);
+             unsigned char gifdata[], int *gifdataindex);
 
 void init_cells(const int height, const int width, int cell[height][width],
                 FILE *fp);
@@ -106,23 +106,32 @@ int main(int argc, char **argv) {
   print_cells(fp, 0, height, width, cell);  // 表示する
   sleep(1);                                 // 1秒休止
   fprintf(fp, "\e[%dA", height + 4);
-
+  unsigned char gifdata[100000] = {
+      'G',  'I',  'F',  '8',  '9',  'a',  width, 0x00, height, 0x00, 0x80, 0x00,
+      0x00, 0xb0, 0xc4, 0xde, 0xFF, 0xFF, 0xFF,  0x21, 0xFF,   11,   'N',  'E',
+      'T',  'S',  'C',  'A',  'P',  'E',  '2',   '.',  '0',    3,    1,    0,
+      0,    0,    0x21, 0xF9, 4,    4,    10,    0,    0,      0};
+  int gifdataindex = 50;
   /* 世代を進める*/
-  for (int gen = 1;; gen++) {
+
+  // FILE *file;
+  // file = fopen("lifegame.gif", "wb");
+  for (int gen = 1; gen < 100; gen++) {
     update_cells(height, width, cell);          // セルを更新
     print_cells(fp, gen, height, width, cell);  // 表示する
     sleep(1);                                   // 1秒休止する
     fprintf(fp, "\e[%dA", height + 4);
-    if (gen % 10 == 0 && gen < 10000) {
-      FILE *file;
-      char *filename;
-      sprintf(filename, "gen%04d.gif", gen);
-      file = fopen(filename, "wb");
-      makegif(width, height, cell, file);
-      fclose(file);
-    }
+    makegif(width, height, cell, gifdata, &gifdataindex);
   }
 
+  for (int i = 0; i < 10000; i++)
+  {
+    printf("%d",gifdata[i]);
+  }
+  
+
+  // fwrite(gifdata, sizeof(unsigned char), sizeof(gifdata) /
+  // sizeof(gifdata[0]),file); fclose(file);
   return EXIT_SUCCESS;
 }
 
@@ -385,7 +394,7 @@ void output_board(int height, int width, int cell[height][width], int gen) {
 }
 
 void makegif(const int width, const int height, const int a[][width],
-             FILE *fp) {
+             unsigned char gifdata[], int *gifdataindex) {
   Node *n = malloc(sizeof(Node) * 300);
   n[0] = node_init("0");
   n[1] = node_init("1");
@@ -471,16 +480,17 @@ void makegif(const int width, const int height, const int a[][width],
       imageindex++;
     }
   }
-  char num = imageindex;
-  unsigned char gifdata[70000] = {
-      'G',  'I',  'F',   '8',  '9',    'a',  width, 0x00, height, 0x00, 0x80,
-      0x00, 0x00, 0x41,  0x69, 0xE1,   0xFF, 0xFF,  0xFF, 0x2C,   0,    0,
-      0,    0,    width, 0,    height, 0,    0x00,  2,    num};
-  for (int i = 0; i < imageindex; i++) {
-    gifdata[31 + i] = imageboard[i];
+  char format[100] = {0x2C, 0, 0, 0, 0, width, 0, height, 0, 0x00, 2};
+  for (int i = 0; i < 11; i++) {
+    gifdata[*(gifdataindex) + i] = format[i];
   }
-  gifdata[31 + imageindex] = 0;
-  gifdata[32 + imageindex] = 0x3B;
-  fwrite(gifdata, sizeof(unsigned char), sizeof(gifdata) / sizeof(gifdata[0]),
-         fp);
+  (*gifdataindex) += 11;
+  char num = imageindex;
+  gifdata[*gifdataindex] = num;
+  *(gifdataindex) += 1;
+  for (int i = 0; i < num; i++) {
+    gifdata[*(gifdataindex) + i] = imageboard[i];
+  }
+  *(gifdataindex) += num;
+  free(n);
 }

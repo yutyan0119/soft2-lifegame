@@ -65,9 +65,9 @@ int main(int argc, char* argv[]) {
     for (int j = 0; j < width; j++) {
       if (height / 3 <= i && i < height * 2 / 3 && width / 3 <= j &&
           j < 2 * width / 3) {
-        code[i * width + j] = '1';
-      } else {
         code[i * width + j] = '0';
+      } else {
+        code[i * width + j] = '1';
       }
       fprintf(fp1, "%c", code[i * width + j]);
     }
