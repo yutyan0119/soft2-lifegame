@@ -4,10 +4,10 @@
 #include <string.h>
 #include <time.h>
 #define MAX_NODE 70000
-#define CODE_SIZE 100
+#define CODE_SIZE 10000
 
 typedef struct node {
-  char c[100000];
+  char c[400];
   bool registerd;
 } Node;
 
@@ -48,7 +48,7 @@ int return0xnum(char buf[]) {
 }
 
 int main(int argc, char* argv[]) {
-  Node *n = malloc(sizeof(Node)*300);
+  Node* n = malloc(sizeof(Node) * 300);
   n[0] = node_init("0");
   n[1] = node_init("1");
   n[2] = node_init("2");
@@ -57,20 +57,22 @@ int main(int argc, char* argv[]) {
   n[5] = node_init("5");
   size_t size = 6;
   char code[CODE_SIZE];
-  int width = 30;
-  int height = 30;
+  int width = 70;
+  int height = 40;
+  FILE* fp1;
+  fp1 = fopen("test.dat", "w");
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      if (10 <= i && i < 20 && 10  <= j && j < 20) {
-        code[i * height + j] = '1';
+      if (height / 3 <= i && i < height * 2 / 3 && width / 3 <= j &&
+          j < 2 * width / 3) {
+        code[i * width + j] = '1';
       } else {
-        code[i * height + j] = '1';
+        code[i * width + j] = '0';
       }
-      printf("%d",code[i*height+j]);
+      fprintf(fp1, "%c", code[i * width + j]);
     }
-    printf("\n");
+    fprintf(fp1, "\n");
   }
-
   char bitsize[CODE_SIZE + 2];
   int bitlength = 3;
   bitsize[0] = bitlength;
@@ -79,8 +81,15 @@ int main(int argc, char* argv[]) {
   ans[0] = 4;
   for (int i = 0; i < strlen(code); i++) {
     char s[1000000];
-    for (int i = 0; i < 1000000; i++) {
-      s[i] = '\0';
+    for (int j = 0; j < 1000000; j++) {
+      s[j] = '\0';
+    }
+    fprintf(fp1, "i=%d\n", i);
+    for (int j = 0; j < height; j++) {
+      for (int k = 0; k < width; k++) {
+        fprintf(fp1, "%c", code[j * width + k]);
+      }
+      fprintf(fp1, "\n");
     }
 
     int j = 0;
@@ -90,9 +99,12 @@ int main(int argc, char* argv[]) {
         break;
       }
       s[j] = code[i + j];
+      // printf("i+j = %d, %d\n", i + j, code[i + j]);
+      // printf("%c",s[j]);
       j++;
     }
-    printf("j = %d\n",j);
+    // printf("\n");
+    // printf("j = %d\n", j);
     if (i + j == strlen(code) && node_find(n, size, s) != -1) {
       ans[anssize + 1] = node_find(n, size, s);
       bitsize[anssize + 1] = bitsize[anssize + 2] = bitlength;
@@ -101,7 +113,7 @@ int main(int argc, char* argv[]) {
       break;
     } else {
       i += strlen(s) - 2;
-      printf("i = %d,%s\n",i,s);
+      // printf("i = %d,%s\n", i, s);
       node_append(n, &size, s);
       s[j - 1] = '\0';
       ans[anssize + 1] = node_find(n, size, s);
@@ -135,7 +147,6 @@ int main(int argc, char* argv[]) {
         y[j] = 0;
       }
     }
-    printf("\n");
     for (int j = 0; j < bitsize[i]; j++) {
       if (bufindex < 0) {  // bufが満杯
         for (int k = 0; k < 8; k++) {
@@ -156,12 +167,30 @@ int main(int argc, char* argv[]) {
     }
   }
   FILE* fp;
-  fp = fopen("giftest.dat","w");
+  fp = fopen("giftest.dat", "w");
   for (int i = 0; i < imageindex; i++) {
-    fprintf(fp,"%d,",imageboard[i]);
+    fprintf(fp, "%d,", imageboard[i]);
   }
-  fprintf(fp,"\n%d",imageindex);
+  fprintf(fp, "\n%d", imageindex);
   fclose(fp);
+  // for (int i = 0; i < size; i++) {
+  //   printf("%d %s\n", i, n[i].c);
+  // }
+  fclose(fp1);
   free(n);
+  char num = imageindex;
+  unsigned char gifdata[70000] = {
+      'G',  'I',  'F',   '8',  '9',    'a',  width, 0x00, height, 0x00, 0x80,
+      0x00, 0x00, 0x41,  0x69, 0xE1,   0xFF, 0xFF,  0xFF, 0x2C,   0,    0,
+      0,    0,    width, 0,    height, 0,    0x00,  2,    num};
+  for (int i = 0; i < imageindex; i++) {
+    gifdata[31 + i] = imageboard[i];
+  }
+  gifdata[31 + imageindex] = 0;
+  gifdata[32 + imageindex] = 0x3B;
+  fp = fopen("my1stgif.gif", "wb");
+  fwrite(gifdata, sizeof(unsigned char), sizeof(gifdata) / sizeof(gifdata[0]),
+         fp);
+  fclose(fp);
   return EXIT_SUCCESS;
 }
