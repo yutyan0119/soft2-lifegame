@@ -68,21 +68,21 @@ int main() {
   char buf[70];
   while (fgets(buf,80,testdata)!=NULL)
   {
-    printf("%s\n",buf);
+    // printf("%s\n",buf);
     for (int i = 0; i < width; i++)
     {
       cell[k][i] = buf[i] - '0';
     }
     k++;
-    printf("%d",k);
+    // printf("%d",k);
   }
   for (int i = 0; i < height; i++)
   {
     for (int j = 0; j < width; j++)
     {
-      printf("%d",cell[i][j]);
+      // printf("%d",cell[i][j]);
     }
-    printf("\n");
+    // printf("\n");
   }
   
   FILE *file;
@@ -96,16 +96,16 @@ int main() {
       4,    4,    10,   0,    0,    0};
   int gifindex = 46;
   /* 世代を進める*/
-  for (int gen = 2; gen < 3; gen++) {
-    // for (int i = 0; i < height; i++) {
-    //   for (int j = 0; j < width; j++) {
-    //     if (i % gen == j % gen) {
-    //       cell[i][j] = 1;
-    //     } else {
-    //       cell[i][j] = 0;
-    //     }
-    //   }
-    // }
+  for (int gen = 2; gen < 40; gen++) {
+    for (int i = 0; i < height; i++) {
+      for (int j = 0; j < width; j++) {
+        if (i % gen == j % gen) {
+          cell[i][j] = 1;
+        } else {
+          cell[i][j] = 0;
+        }
+      }
+    }
     printf("gen = %d\n", gen);
     makegif(width, height, cell, file, gifdata, &gifindex);
     printf("%d\n", gifindex);
