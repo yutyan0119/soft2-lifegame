@@ -7,6 +7,66 @@
 #define MAX_NODE 10000
 #define CODE_SIZE 50000
 
+int max(int a, int b) {
+  if (a > b) {
+    return a;
+  } else {
+    return b;
+  }
+}
+
+int min(int a, int b) {
+  if (a > b) {
+    return b;
+  } else {
+    return a;
+  }
+}
+
+int count_adjacent_cells(int h, int w, const int height, const int width,
+                         int cell[height][width]) {
+  // cellの(h,w)周辺の数をfor文でカウントする
+  int count = 0;
+  int miny = max(0, h - 1);
+  int maxy = min(height - 1, h + 1);
+  int minx = max(0, w - 1);
+  int maxx = min(width - 1, w + 1);
+  for (int i = miny; i <= maxy; i++) {
+    for (int j = minx; j <= maxx; j++) {
+      count += cell[i][j];
+    }
+  }
+  count -= cell[h][w];
+  return count;
+};
+
+void update_cells(const int height, const int width, int cell[height][width]) {
+  int newcell[height][width];
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      int count = count_adjacent_cells(i, j, height, width, cell);
+      if (cell[i][j]) {
+        if (count == 2 || count == 3) {
+          newcell[i][j] = 1;
+        } else {
+          newcell[i][j] = 0;
+        }
+      } else {
+        if (count == 3) {
+          newcell[i][j] = 1;
+        } else {
+          newcell[i][j] = 0;
+        }
+      }
+    }
+  }
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      cell[i][j] = newcell[i][j];
+    }
+  }
+};
+
 typedef struct node {
   char c[1000];
   bool registerd;
@@ -63,28 +123,24 @@ int main() {
   // }
   FILE *testdata;
   int k = 0;
-  testdata = fopen("testdata.txt","r");
+  testdata = fopen("testdata.txt", "r");
   int cell[height][width];
   char buf[70];
-  while (fgets(buf,80,testdata)!=NULL)
-  {
+  while (fgets(buf, 80, testdata) != NULL) {
     // printf("%s\n",buf);
-    for (int i = 0; i < width; i++)
-    {
+    for (int i = 0; i < width; i++) {
       cell[k][i] = buf[i] - '0';
     }
     k++;
     // printf("%d",k);
   }
-  for (int i = 0; i < height; i++)
-  {
-    for (int j = 0; j < width; j++)
-    {
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
       // printf("%d",cell[i][j]);
     }
     // printf("\n");
   }
-  
+
   FILE *file;
   char *filename;
   file = fopen("animetest.gif", "w");
@@ -96,18 +152,10 @@ int main() {
       4,    4,    10,   0,    0,    0};
   int gifindex = 46;
   /* 世代を進める*/
-  for (int gen = 2; gen < 40; gen++) {
-    for (int i = 0; i < height; i++) {
-      for (int j = 0; j < width; j++) {
-        if (i % gen == j % gen) {
-          cell[i][j] = 1;
-        } else {
-          cell[i][j] = 0;
-        }
-      }
-    }
-    printf("gen = %d\n", gen);
+  for (int gen = 2; gen < 10; gen++) {
     makegif(width, height, cell, file, gifdata, &gifindex);
+    update_cells(height, width, cell);
+    printf("gen = %d\n", gen);
     printf("%d\n", gifindex);
   }
   gifdata[gifindex] = 0x3b;
@@ -268,24 +316,25 @@ void makegif(const int width, const int height, const int a[][width], FILE *fp,
     (*gifdataindex)++;
   }
   int imageboardindex = 0;
-  printf("gifdataindex = %d,num = %d\n",*gifdataindex,num);
+  printf("gifdataindex = %d,num = %d\n", *gifdataindex, num);
   while (num >= 256) {
     gifdata[*gifdataindex] = 255;
     (*gifdataindex)++;
     for (int j = 0; j < 255; j++) {
       gifdata[*(gifdataindex)] = imageboard[imageboardindex];
-      // printf("j = %d, gifdataindex = %d, imageboardindex = %d\n",j,*gifdataindex,imageboardindex);
-      *(gifdataindex)+=1;
+      // printf("j = %d, gifdataindex = %d, imageboardindex =
+      // %d\n",j,*gifdataindex,imageboardindex);
+      *(gifdataindex) += 1;
       imageboardindex++;
     }
     num -= 255;
   }
   gifdata[*gifdataindex] = num;
   // printf("kokomadekita!\n");
-  *(gifdataindex)+=1;
+  *(gifdataindex) += 1;
   for (int j = 0; j < num; j++) {
     gifdata[*(gifdataindex)] = imageboard[imageboardindex];
-    *(gifdataindex)+=1;
+    *(gifdataindex) += 1;
     imageboardindex++;
   }
   gifdata[*(gifdataindex)] = 0;
