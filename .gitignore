@@ -58,5 +58,7 @@ dkms.conf
 #image
 *.gif
 
+*.zip
+
 !readme1.gif
 !readme2.gif
