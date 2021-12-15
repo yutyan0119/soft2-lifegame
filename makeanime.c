@@ -6,6 +6,7 @@
 #include <unistd.h>  // sleep()関数を使う
 #define MAX_NODE 10000
 #define CODE_SIZE 50000
+#define expandrate 2
 
 int max(int a, int b) {
   if (a > b) {
@@ -113,48 +114,54 @@ void makegif(const int width, const int height, const int a[][width], FILE *fp,
 
 int main() {
   FILE *fp = stdout;
-  const int height = 40;
-  const int width = 70;
-  // int cell[height][width];
-  // for (int y = 0; y < height; y++) {
-  //   for (int x = 0; x < width; x++) {
-  //     cell[y][x] = 0;
-  //   }
-  // }
-  FILE *testdata;
-  int k = 0;
-  testdata = fopen("testdata.txt", "r");
+  const int height = 30;
+  const int width = 30;
   int cell[height][width];
-  char buf[70];
-  while (fgets(buf, 80, testdata) != NULL) {
-    // printf("%s\n",buf);
-    for (int i = 0; i < width; i++) {
-      cell[k][i] = buf[i] - '0';
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      cell[y][x] = 0;
     }
-    k++;
-    // printf("%d",k);
   }
-  for (int i = 0; i < height; i++) {
-    for (int j = 0; j < width; j++) {
-      // printf("%d",cell[i][j]);
-    }
-    // printf("\n");
-  }
+  // FILE *testdata;
+  // int k = 0;
+  // testdata = fopen("testdata.txt", "r");
+  // int cell[height][width];
+  // char buf[70];
+  // while (fgets(buf, 80, testdata) != NULL) {
+  //   // printf("%s\n",buf);
+  //   for (int i = 0; i < width; i++) {
+  //     cell[k][i] = buf[i] - '0';
+  //   }
+  //   k++;
+  //   // printf("%d",k);
+  // }
+  // for (int i = 0; i < height; i++) {
+  //   for (int j = 0; j < width; j++) {
+  //     // printf("%d",cell[i][j]);
+  //   }
+  //   // printf("\n");
+  // }
 
   FILE *file;
   char *filename;
   file = fopen("animetest.gif", "w");
   unsigned char gifdata[1000000] = {
-      'G',  'I',  'F',  '8',  '9',  'a',  width * 3, 0x00, height * 3, 0x00,
-      0x80, 0x00, 0x00, 0xb0, 0xc4, 0xde, 0xFF,      0xFF, 0xFF,       0x21,
-      0xFF, 11,   'N',  'E',  'T',  'S',  'C',       'A',  'P',        'E',
-      '2',  '.',  '0',  3,    1,    0,    0,         0,    0x21,       0xF9,
-      4,    4,    10,   0,    0,    0};
-  int gifindex = 46;
+      'G',  'I',  'F',  '8',  '9',  'a',  60,   0x00, 60,   0x00, 0x91,
+      0x00, 0x00, 0xb0, 0xc4, 0xde, 0xFF, 0xFF, 0xFF, 0xc7, 0x15, 0x85,
+      0xff, 0xff, 0xff, 0x21, 0xFF, 11,   'N',  'E',  'T',  'S',  'C',
+      'A',  'P',  'E',  '2',  '.',  '0',  3,    1,    0,    0,    0,
+      0x21, 0xF9, 4,    4,    10,   0x00, 0,    0};  //'a'のあと2つが幅、2つが高さでリトルエンディアンそのあとデータ→カラー
+  int gifindex = 52;
   /* 世代を進める*/
-  for (int gen = 2; gen < 10; gen++) {
+  for (int gen = 2; gen < 40; gen++) {
+    printf("gifdataindex1 = %d\n",gifindex);
+    int a = min(gen,height);
+    cell[min(gen,height)][0] = 2;
+    printf("gifdataindex2 = %d\n",gifindex);
+    cell[min(gen-1,height)][0] = 1;
+    printf("gifdataindex3 = %d\n",gifindex);
     makegif(width, height, cell, file, gifdata, &gifindex);
-    update_cells(height, width, cell);
+    // update_cells(height, width, cell);
     printf("gen = %d\n", gen);
     printf("%d\n", gifindex);
   }
@@ -180,22 +187,14 @@ void makegif(const int width, const int height, const int a[][width], FILE *fp,
   n[4] = node_init("4");
   n[5] = node_init("5");
   size_t size = 6;
-  unsigned char *code = malloc(sizeof(unsigned char) * 100000);
+  unsigned char *code = malloc(sizeof(unsigned char) * 1000000);
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      if (a[i][j] == 1) {
-        for (int k = 0; k < 3; k++) {
-          for (int l = 0; l < 3; l++) {
-            code[i * width * 3 * 3 + k * width * 3 + j * 3 + l] = '1';
-            // printf("1を%dに入れる\n", (i * 3 + k) * width * 3 + j * 3 + l);
-          }
-        }
-      } else {
-        for (int k = 0; k < 3; k++) {
-          for (int l = 0; l < 3; l++) {
-            code[i * width * 3 * 3 + k * width * 3 + j * 3 + l] = '0';
-            // printf("0を%dに入れる\n",i*width*3*3+k*width*3+j*3+l);
-          }
+      for (int k = 0; k < expandrate; k++) {
+        for (int l = 0; l < expandrate; l++) {
+          code[i * width * expandrate * expandrate + k * width * expandrate +
+               j * expandrate + l] = a[i][j] + '0';
+          // printf("1を%dに入れる\n", (i * 3 + k) * width * 3 + j * 3 + l);
         }
       }
     }
@@ -309,8 +308,12 @@ void makegif(const int width, const int height, const int a[][width], FILE *fp,
   //   printf("%d,", bitsize[i]);
   // }
   // printf("\n");
-  char need[] = {0x2c, 0x00,       0x00, 0x00, 0x00, width * 3,
-                 0,    height * 3, 0,    0,    2};
+  char need[] = {0x2c, 0x00,
+                 0x00, 0x00,
+                 0x00, width * expandrate,
+                 0x00, height * expandrate,
+                 0x00, 0,
+                 2};  //'0x00*4'のあと2つが幅、2つが高さでリトルエンディアン
   for (int i = 0; i < 11; i++) {
     gifdata[*gifdataindex] = need[i];
     (*gifdataindex)++;
